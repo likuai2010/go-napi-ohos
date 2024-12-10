@@ -84,6 +84,7 @@ func (p *Promise) reset(e Env) {
 		nil, asyncResourceName.Value,
 		0,
 		1, // initialize with 1 acquisition
+		nil,
 	)
 	if st != napi.StatusOK {
 		panic(napi.StatusError(st))
@@ -102,7 +103,7 @@ func (p *Promise) ensurePending() {
 }
 
 func (p *Promise) settle() {
-	st := napi.CallThreadsafeFunction(p.ThreadsafeFunction)
+	st := napi.CallThreadsafeFunction(p.ThreadsafeFunction, nil)
 	if st != napi.StatusOK {
 		panic(napi.StatusError(st))
 	}

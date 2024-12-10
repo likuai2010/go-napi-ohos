@@ -1,6 +1,9 @@
 package napi
 
 /*
+
+#cgo CFLAGS: -I/usr/include/napi
+#include "gonapi.h"
 #include <napi/native_api.h>
 */
 import "C"
@@ -93,6 +96,7 @@ func CreateThreadsafeFunction(
 	fn Value,
 	asyncResource, asyncResourceName Value,
 	maxQueueSize, initialThreadCount int,
+	jsCallbck *ThreadsafeFunctionsCaller,
 ) (ThreadsafeFunction, Status) {
 	var result ThreadsafeFunction
 	status := Status(C.napi_create_threadsafe_function(
@@ -104,20 +108,43 @@ func CreateThreadsafeFunction(
 		C.size_t(initialThreadCount),
 		nil,
 		nil,
-		nil,
-		nil,
+		unsafe.Pointer(jsCallbck),
+		C.ThreadsafeFunctionCallback(),
 		(*C.napi_threadsafe_function)(unsafe.Pointer(&result)),
 	))
 	return result, status
 }
 
+//export CallThreadsafeFunctionCallback
+func CallThreadsafeFunctionCallback(wrap unsafe.Pointer, env C.napi_env, fn C.napi_value, ctx unsafe.Pointer, data unsafe.Pointer) {
+	caller := (*ThreadsafeFunctionsCaller)(wrap)
+	caller.Cb(Env(env), Value(fn), ctx, data)
+}
+
 func CallThreadsafeFunction(
 	fn ThreadsafeFunction,
+	data unsafe.Pointer,
 ) Status {
 	return Status(C.napi_call_threadsafe_function(
 		C.napi_threadsafe_function(fn),
-		nil,
+		data,
 		C.napi_tsfn_blocking,
+	))
+}
+func CallFunction(
+	env Env,
+	fn Value,
+	params []Value,
+) Status {
+	cPointer := C.malloc(C.size_t(unsafe.Sizeof(params)))
+	*(*[]Value)(unsafe.Pointer(cPointer)) = params
+	return Status(C.napi_call_function(
+		C.napi_env(env),
+		nil,
+		C.napi_value(fn),
+		C.size_t(len(params)),
+		(*C.napi_value)(cPointer),
+		nil,
 	))
 }
 

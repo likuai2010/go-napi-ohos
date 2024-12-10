@@ -165,7 +165,6 @@ func ExecuteCallback(
 		if err != nil {
 			fmt.Printf("napi.ExecuteCallback: Recovered from panic: %s\n", err)
 			reportStackTrace()
-
 			msg := "unknown error"
 			if err, ok := err.(error); ok {
 				msg = err.Error()
