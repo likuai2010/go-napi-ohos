@@ -99,6 +99,8 @@ func CreateThreadsafeFunction(
 	jsCallbck *ThreadsafeFunctionsCaller,
 ) (ThreadsafeFunction, Status) {
 	var result ThreadsafeFunction
+	cPointer := C.malloc(C.size_t(unsafe.Sizeof(*jsCallbck)))
+	*(*ThreadsafeFunctionsCaller)(unsafe.Pointer(cPointer)) = *jsCallbck
 	status := Status(C.napi_create_threadsafe_function(
 		C.napi_env(env),
 		C.napi_value(fn),
@@ -108,7 +110,7 @@ func CreateThreadsafeFunction(
 		C.size_t(initialThreadCount),
 		nil,
 		nil,
-		unsafe.Pointer(jsCallbck),
+		cPointer,
 		C.ThreadsafeFunctionCallback(),
 		(*C.napi_threadsafe_function)(unsafe.Pointer(&result)),
 	))
@@ -123,11 +125,15 @@ func CallThreadsafeFunctionCallback(wrap unsafe.Pointer, env C.napi_env, fn C.na
 
 func CallThreadsafeFunction(
 	fn ThreadsafeFunction,
-	data unsafe.Pointer,
+	env Env,
 ) Status {
+	params := C.CallbackData{
+		Type:    C.CString("xxx"),
+		Content: C.CString("xxx"),
+	}
 	return Status(C.napi_call_threadsafe_function(
 		C.napi_threadsafe_function(fn),
-		data,
+		unsafe.Pointer(&params),
 		C.napi_tsfn_blocking,
 	))
 }
@@ -136,16 +142,8 @@ func CallFunction(
 	fn Value,
 	params []Value,
 ) Status {
-	cPointer := C.malloc(C.size_t(unsafe.Sizeof(params)))
-	*(*[]Value)(unsafe.Pointer(cPointer)) = params
-	return Status(C.napi_call_function(
-		C.napi_env(env),
-		nil,
-		C.napi_value(fn),
-		C.size_t(len(params)),
-		(*C.napi_value)(cPointer),
-		nil,
-	))
+	C.GetParams(C.napi_env(env), C.napi_value(fn))
+	return Status(1)
 }
 
 func AcquireThreadsafeFunction(fn ThreadsafeFunction) Status {
