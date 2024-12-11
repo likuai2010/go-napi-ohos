@@ -148,6 +148,15 @@ func GetValueDouble(env Env, value Value) (float64, Status) {
 	))
 	return result, status
 }
+func GetValueInt32(env Env, value Value) (int32, Status) {
+	var result int32
+	status := Status(C.napi_get_value_int32(
+		C.napi_env(env),
+		C.napi_value(value),
+		(*C.int)(unsafe.Pointer(&result)),
+	))
+	return result, status
+}
 
 func GetValueBool(env Env, value Value) (bool, Status) {
 	var result bool
