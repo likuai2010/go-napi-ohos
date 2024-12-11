@@ -103,7 +103,7 @@ func (p *Promise) ensurePending() {
 }
 
 func (p *Promise) settle() {
-	st := napi.CallThreadsafeFunction(p.ThreadsafeFunction, nil)
+	st := napi.CallThreadsafeFunction(p.ThreadsafeFunction, nil, nil)
 	if st != napi.StatusOK {
 		panic(napi.StatusError(st))
 	}

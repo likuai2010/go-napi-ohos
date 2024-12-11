@@ -125,25 +125,17 @@ func CallThreadsafeFunctionCallback(wrap unsafe.Pointer, env C.napi_env, fn C.na
 
 func CallThreadsafeFunction(
 	fn ThreadsafeFunction,
-	env Env,
+	key, value Value,
 ) Status {
 	params := C.CallbackData{
-		Type:    C.CString("xxx"),
-		Content: C.CString("xxx"),
+		Type:  C.CString("xxx"),
+		Value: C.napi_value(value),
 	}
 	return Status(C.napi_call_threadsafe_function(
 		C.napi_threadsafe_function(fn),
 		unsafe.Pointer(&params),
 		C.napi_tsfn_blocking,
 	))
-}
-func CallFunction(
-	env Env,
-	fn Value,
-	params []Value,
-) Status {
-	C.GetParams(C.napi_env(env), C.napi_value(fn))
-	return Status(1)
 }
 
 func AcquireThreadsafeFunction(fn ThreadsafeFunction) Status {

@@ -7,7 +7,7 @@
 
 typedef struct {
     char *Type;
-    char *Content;
+    napi_value Value;
 } CallbackData;
 
 napi_threadsafe_function_call_js ThreadsafeFunctionCallback(void);
