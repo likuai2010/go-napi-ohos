@@ -11,14 +11,8 @@
 void tsfn_callback_function(napi_env env, napi_value callback, void *ctx, void *data) {
     CallbackData *cd = (CallbackData *)data;
     napi_value params[2];
-    napi_create_string_utf8(env, cd->Type, NAPI_AUTO_LENGTH, &params[0]);
-    // napi_create_string_utf8(env, cd->Value, NAPI_AUTO_LENGTH, &params[1]);
+    params[0] = cd->Key;
     params[1] = cd->Value;
     napi_call_function(env, NULL, callback, 2, params, NULL);
 }
 napi_threadsafe_function_call_js ThreadsafeFunctionCallback() { return tsfn_callback_function; }
-napi_value *GetParams(napi_env env, napi_value fn) {
-    napi_value dd[1];
-    napi_create_int32(env, 222, &dd[0]);
-    return &dd;
-}

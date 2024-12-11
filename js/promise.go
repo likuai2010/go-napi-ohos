@@ -84,7 +84,7 @@ func (p *Promise) reset(e Env) {
 		nil, asyncResourceName.Value,
 		0,
 		1, // initialize with 1 acquisition
-		nil,
+		false,
 	)
 	if st != napi.StatusOK {
 		panic(napi.StatusError(st))

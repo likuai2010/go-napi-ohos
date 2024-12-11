@@ -1,8 +1,6 @@
 package js
 
 import (
-	"unsafe"
-
 	"github.com/akshayganeshen/napi-go"
 )
 
@@ -17,12 +15,7 @@ type TsFunc struct {
 
 func (e Env) CreateThreadsafeFunction(fn Value, resourceName string) TsFunc {
 	asyncResourceName := e.ValueOf(resourceName)
-	caller := napi.ThreadsafeFunctionsCaller{
-		Cb: func(env napi.Env, jsCallbck napi.Value, ctx unsafe.Pointer, data unsafe.Pointer) {
-
-		},
-	}
-	tsfn, stuats := napi.CreateThreadsafeFunction(e.Env, fn.Value, nil, asyncResourceName.Value, 0, 1, &caller)
+	tsfn, stuats := napi.CreateThreadsafeFunction(e.Env, fn.Value, nil, asyncResourceName.Value, 0, 1, true)
 	return TsFunc{
 		Env:    e.Env,
 		Value:  tsfn,

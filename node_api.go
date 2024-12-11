@@ -96,11 +96,9 @@ func CreateThreadsafeFunction(
 	fn Value,
 	asyncResource, asyncResourceName Value,
 	maxQueueSize, initialThreadCount int,
-	jsCallbck *ThreadsafeFunctionsCaller,
+	callback bool,
 ) (ThreadsafeFunction, Status) {
 	var result ThreadsafeFunction
-	cPointer := C.malloc(C.size_t(unsafe.Sizeof(*jsCallbck)))
-	*(*ThreadsafeFunctionsCaller)(unsafe.Pointer(cPointer)) = *jsCallbck
 	status := Status(C.napi_create_threadsafe_function(
 		C.napi_env(env),
 		C.napi_value(fn),
@@ -110,11 +108,18 @@ func CreateThreadsafeFunction(
 		C.size_t(initialThreadCount),
 		nil,
 		nil,
-		cPointer,
-		C.ThreadsafeFunctionCallback(),
+		nil,
+		hasCallback(callback),
 		(*C.napi_threadsafe_function)(unsafe.Pointer(&result)),
 	))
 	return result, status
+}
+func hasCallback(callback bool) C.napi_threadsafe_function_call_js {
+	if callback {
+		return C.ThreadsafeFunctionCallback()
+	} else {
+		return nil
+	}
 }
 
 //export CallThreadsafeFunctionCallback
@@ -128,7 +133,7 @@ func CallThreadsafeFunction(
 	key, value Value,
 ) Status {
 	params := C.CallbackData{
-		Type:  C.CString("xxx"),
+		Key:   C.napi_value(key),
 		Value: C.napi_value(value),
 	}
 	return Status(C.napi_call_threadsafe_function(
